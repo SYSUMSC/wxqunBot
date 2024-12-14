@@ -94,15 +94,13 @@ class MsgRecords:
         #整理为发言人:内容
         msgs = self.msgs[room_id]
         res = ""
-        #只取msgs最后的20条
-        msgs = msgs[-20:]
         for item in msgs:
-            if not item.wxmsg.is_text() and not item.wxmsg.type == 3:
+            if not item.wxmsg.is_text() and not item.wxmsg.type == 3 and not item.wxmsg.type == 47:
                 continue
             name = wcf.get_alias_in_chatroom(item.wxmsg.sender,room_id)
             # 格式化时间
             formatted_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item.time))
-            if item.wxmsg.type == 3:
+            if item.wxmsg.type == 3 or item.wxmsg.type == 47:
                 res += f"{formatted_time} {name}:{item.img_info}\n"
             else:
                 res += f"{formatted_time} {name}:{item.wxmsg.content}\n"

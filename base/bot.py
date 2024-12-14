@@ -57,7 +57,7 @@ class bot:
             # img = f"{img_dir}/load.gif"
             # self.log.info(f"发送表情:{img}")
             # self.wcf.send_file(img, recevier)
-            ai_reply = self.summary()
+            ai_reply = self.summary(False)
             self.send_msg(ai_reply,recevier)
             return
         self.MsgRecords.add_msg(msg,self.wcf)
@@ -102,11 +102,11 @@ class bot:
             ai_reply = self.summary()
             self.send_msg(ai_reply, self.roomid)
 
-    def summary(self):
+    def summary(self,schedule=True):
         self.log.info("开始总结")
         #判断0点-7点不说话
         now = datetime.now()
-        if now.hour < 7 and now.hour >= 0:
+        if schedule and now.hour < 7 and now.hour >= 0:
             return
         system_prompt = """你是一个中文的群聊总结的助手，你可以为一个微信的群聊记录，提取并总结每个时间段大家在重点讨论的话题内容。
 
