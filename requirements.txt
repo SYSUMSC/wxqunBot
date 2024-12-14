@@ -1,0 +1,4 @@
+loguru
+openai
+requests
+wcferry==39.3.3.2
