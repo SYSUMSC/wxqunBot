@@ -37,29 +37,28 @@ class bot:
         if roomid != self.roomid and msg.from_group():
             return
         #判断发言人是主人
-        if not msg.sender in self.master_ids:
-            return
-        #指令支持
-        txt = msg.content
-        if "/最近消息" in txt:
-            recent_msg = self.MsgRecords.get_recent_msg(self.roomid,self.wcf)
-            #判断群
-            if msg.from_group():
-                self.send_msg(f"最近消息:\n{recent_msg}", self.roomid)
-            else:
-                self.send_msg(f"最近消息:\n{recent_msg}", msg.sender)
-            return
-        if "/总结" in txt:
-            if msg.from_group():
-                recevier = self.roomid
-            else:
-                recevier = msg.sender
-            # img = f"{img_dir}/load.gif"
-            # self.log.info(f"发送表情:{img}")
-            # self.wcf.send_file(img, recevier)
-            ai_reply = self.summary(False)
-            self.send_msg(ai_reply,recevier)
-            return
+        if msg.sender in self.master_ids:
+            #指`令支持
+            txt = msg.content
+            if "/最近消息" in txt:
+                recent_msg = self.MsgRecords.get_recent_msg(self.roomid,self.wcf)
+                #判断群
+                if msg.from_group():
+                    self.send_msg(f"最近消息:\n{recent_msg}", self.roomid)
+                else:
+                    self.send_msg(f"最近消息:\n{recent_msg}", msg.sender)
+                return
+            if "/总结" in txt:
+                if msg.from_group():
+                    recevier = self.roomid
+                else:
+                    recevier = msg.sender
+                # img = f"{img_dir}/load.gif"
+                # self.log.info(f"发送表情:{img}")
+                # self.wcf.send_file(img, recevier)
+                ai_reply = self.summary(False)
+                self.send_msg(ai_reply,recevier)
+                return
         self.MsgRecords.add_msg(msg,self.wcf)
     def run(self):
         summary_thread = Thread(target=self.summary_thread)
