@@ -12,8 +12,6 @@ def main():
         logging.error("Bot 初始化失败，无法接收消息")
         return
 
-    logging.info("注册退出处理函数")
-    atexit.register(on_exit)
     logging.info("启动主任务")
     chatbot.run()
 

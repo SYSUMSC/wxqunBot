@@ -1,18 +1,10 @@
-# -*- coding: utf-8 -*-
-from pystools.PLogger import PLogger
+from loguru import logger
 
-from pathlib import Path
+# 配置日志记录
+logger.add("logs/app.log", rotation="500 MB", retention="10 days", level="INFO")
 
-# project_path = Path.cwd().parent
-project_path = Path.cwd()
-LogPath = Path(project_path, "logs")
-log_name = "err.log"
+# 你可以根据需要添加更多的日志格式化选项
+logger.add("logs/error.log", level="ERROR", rotation="10 MB", retention="10 days")
 
-print("项目日志默认目录为：", f"{LogPath}/{log_name}")
-log = PLogger(log_folder=LogPath, log_name=log_name).get_logger()
-
-# log = PLogger(log_name=log_name).get_logger()
-
-
-def oss_progress_callback(consumed_bytes, total_byte):
-    log.info(f"上传进度：{consumed_bytes}/{total_byte}  {consumed_bytes / total_byte * 100:.2f}%")
+# 导出 logger 对象
+log = logger
