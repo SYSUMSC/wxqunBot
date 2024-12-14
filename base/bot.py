@@ -32,7 +32,6 @@ class bot:
         roomid = msg.roomid
         if roomid != self.roomid and msg.from_group():
             return
-        self.MsgRecords.add_msg(msg,self.wcf)
         #判断发言人是主人
         if msg.sender != self.master_id:
             return
@@ -45,12 +44,15 @@ class bot:
                 self.send_msg(f"最近消息:\n{recent_msg}", self.roomid)
             else:
                 self.send_msg(f"最近消息:\n{recent_msg}", msg.sender)
+            return
         if "/总结" in txt:
             ai_reply = self.summary()
             if msg.from_group():
                 self.send_msg(ai_reply, self.roomid)
             else:
                 self.send_msg(ai_reply, msg.sender)
+            return
+        self.MsgRecords.add_msg(msg,self.wcf)
     def run(self):
         summary_thread = Thread(target=self.summary_thread)
         summary_thread.start()
