@@ -4,9 +4,13 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 from api.openaiApi import openaiApi
+from utils.img import convert_gif_to_jpg, get_img_ext
 from utils.logger import log
 from wcferry.client import Wcf
 from config import tmp_dir
+from utils.download import download_file
+from utils.xml import parse_xml
+import os
 class Msg:
     def __init__(self, wxmsg):
         self.wxmsg = wxmsg
@@ -37,14 +41,13 @@ class MsgRecords:
         # if not wxmsg.from_group():
         #     return
         #只接收text或者img
-        if not wxmsg.is_text() and not wxmsg.type == 3:
+        if not wxmsg.is_text() and not wxmsg.type == 3 and not wxmsg.type == 47:
             log.info(f"not text or img:{wxmsg.content}")
             return
 
         room_id = wxmsg.roomid
         msg = Msg(wxmsg)
         if wxmsg.type == 3:
-            #时间戳+md5content生成保存路径
             log.info(f"尝试下载 {tmp_dir}")
             img_path = wcf.download_image(wxmsg.id, wxmsg.extra, tmp_dir,300)
             if not img_path:
@@ -58,12 +61,41 @@ class MsgRecords:
                 log.error(f"chat_img failed:{errmsg}")
                 return
             msg.img_info = f"发送了图片，图片描述:{res}"
+        if wxmsg.type == 47:
+            root = parse_xml(wxmsg.content)
+            url = root.find("emoji").get("cdnurl")
+            log.info(f"尝试下载 {url}")
+            img_path = f"{tmp_dir}/{wxmsg.id}"
+            download_file(url, img_path)
+            if not img_path:
+                log.error(f"download image failed:{url}")
+                return
+            log.info(f"download image success:{url}")
+            # 根据二进制文件类型改后缀
+            ext = get_img_ext(img_path)
+            if ext == "gif":
+                new_img_path = f"{img_path}.jpg"
+                convert_gif_to_jpg(img_path, new_img_path)
+                img_path = new_img_path
+            else:
+                new_img_path = f"{img_path}.{ext}"
+                # 重命名文件
+                os.rename(img_path,new_img_path)
+            #发给llm
+            prompt = "中文描述图片"
+            res,errmsg = self.oai.chat_img(prompt,new_img_path)
+            if not res:
+                log.error(f"chat_img failed:{errmsg}")
+                return
+            msg.img_info = f"发送了图片，图片描述:{res}"
         self.msgs[room_id].append(msg)
-        log.info(f"add_msg:{msg.hash}")
+        log.info(f"add_msg:{msg.hash} {msg.img_info} {msg.wxmsg.content}")
     def get_recent_msg(self, room_id,wcf)->str:
         #整理为发言人:内容
         msgs = self.msgs[room_id]
         res = ""
+        #只取msgs最后的20条
+        msgs = msgs[-20:]
         for item in msgs:
             if not item.wxmsg.is_text() and not item.wxmsg.type == 3:
                 continue

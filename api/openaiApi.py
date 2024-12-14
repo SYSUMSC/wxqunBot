@@ -70,7 +70,7 @@ class openaiApi:
 if __name__ == "__main__":
     #python -m api.openaiApi
     oai = openaiApi()
-    img_path = r"C:\Code\wxqunBot\tmp\c9860c522388cf2470d5b80986487070.jpg"
+    img_path = r"C:\Code\wxqunBot\tmp\369743613501245641.jpg"
     prompt = "中文描述图片"
     res,errmsg = oai.chat_img(prompt,img_path)
     print(res)

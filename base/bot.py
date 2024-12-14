@@ -10,7 +10,7 @@ import traceback
 from api.openaiApi import openaiApi
 from base.randomMsg import randomMsg
 from utils.MsgRecords import MsgRecords
-
+from config import *
 from wcferry.client import Wcf
 from wcferry.wxmsg import WxMsg
 class bot:
@@ -22,7 +22,11 @@ class bot:
         self.randomMsg = randomMsg()
         self.oai = openaiApi()
         self.roomid = "44646802384@chatroom"#需要处理消息的roomid
-        self.master_id = "wxid_3zcnbha3j2v922"#主人的wxid
+        self.master_ids = [
+            "wxid_3zcnbha3j2v922",#xy3
+            "wxid_jvoles5bl6522",#hy
+            "wxid_s5ruh5lygq9722",#tokisakix
+        ]
         # 启用接收消息
         if not self.wcf.enable_receiving_msg():
             self.log.error("启用接收消息失败")
@@ -33,7 +37,7 @@ class bot:
         if roomid != self.roomid and msg.from_group():
             return
         #判断发言人是主人
-        if msg.sender != self.master_id:
+        if not msg.sender in self.master_ids:
             return
         #指令支持
         txt = msg.content
@@ -46,11 +50,15 @@ class bot:
                 self.send_msg(f"最近消息:\n{recent_msg}", msg.sender)
             return
         if "/总结" in txt:
-            ai_reply = self.summary()
             if msg.from_group():
-                self.send_msg(ai_reply, self.roomid)
+                recevier = self.roomid
             else:
-                self.send_msg(ai_reply, msg.sender)
+                recevier = msg.sender
+            # img = f"{img_dir}/load.gif"
+            # self.log.info(f"发送表情:{img}")
+            # self.wcf.send_file(img, recevier)
+            ai_reply = self.summary()
+            self.send_msg(ai_reply,recevier)
             return
         self.MsgRecords.add_msg(msg,self.wcf)
     def run(self):
