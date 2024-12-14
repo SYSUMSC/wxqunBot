@@ -32,7 +32,7 @@ class bot:
         roomid = msg.roomid
         if roomid != self.roomid and msg.from_group():
             return
-        self.MsgRecords.add_msg(msg)
+        self.MsgRecords.add_msg(msg,self.wcf)
         #判断发言人是主人
         if msg.sender != self.master_id:
             return
@@ -58,7 +58,7 @@ class bot:
             try:
                 # 从消息队列中获取消息
                 msg: WxMsg = self.wcf.get_msg()
-                self.log.debug(f"收到消息: {msg.content} 来自 {msg.sender} 在 {msg.roomid}")
+                self.log.debug(f"收到消息({msg.type}): {msg.content} 来自 {msg.sender} 在 {msg.roomid}")
                 thread = Thread(target=self.processMsg, args=(msg,))
                 thread.start()
             except Empty:
