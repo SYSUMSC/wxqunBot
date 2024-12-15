@@ -49,6 +49,7 @@ class MsgRecords:
         room_id = wxmsg.roomid
         msg = Msg(wxmsg)
         if wxmsg.type == 3:
+            # 图片
             log.info(f"尝试下载 {tmp_dir}")
             img_path = wcf.download_image(wxmsg.id, wxmsg.extra, tmp_dir,300)
             if not img_path:
@@ -62,7 +63,15 @@ class MsgRecords:
                 log.error(f"chat_img failed:{errmsg}")
                 return
             msg.content = f"发送了图片，描述:{res}"
+        elif wxmsg.type == 46:
+            # 卡片
+            root = parse_xml(wxmsg.content)
+            appname = root.find("appinfo").find("appname").text
+            title = root.find("appmsg").find("title").text
+            des = root.find("appmsg").find("des").text
+            msg.content = f"发送了卡片分享 平台:{appname} 标题:{title} 描述:{des}"
         elif wxmsg.type == 47:
+            # 表情包
             root = parse_xml(wxmsg.content)
             url = root.find("emoji").get("cdnurl")
             log.info(f"尝试下载 {url}")
