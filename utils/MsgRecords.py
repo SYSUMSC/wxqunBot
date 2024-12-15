@@ -42,7 +42,7 @@ class MsgRecords:
         # if not wxmsg.from_group():
         #     return
         #只接收text或者img
-        if not wxmsg.is_text() and not wxmsg.type == 3 and not wxmsg.type == 47:
+        if not wxmsg.is_text() and not wxmsg.type == 3 and not wxmsg.type == 46 and not wxmsg.type == 47:
             log.info(f"not text or img:{wxmsg.content}")
             return
 
