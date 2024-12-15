@@ -14,9 +14,10 @@ import os
 class Msg:
     def __init__(self, wxmsg):
         self.wxmsg = wxmsg
-        self.img_info = ""
+        self.content = ""
         self.hash = hashlib.md5(wxmsg.content.encode()).hexdigest()
         self.time = time.time()
+
 
 class MsgRecords:
     def __init__(self,recent_time=60*60*3):
@@ -60,8 +61,8 @@ class MsgRecords:
             if not res:
                 log.error(f"chat_img failed:{errmsg}")
                 return
-            msg.img_info = f"发送了图片，图片描述:{res}"
-        if wxmsg.type == 47:
+            msg.content = f"发送了图片，描述:{res}"
+        elif wxmsg.type == 47:
             root = parse_xml(wxmsg.content)
             url = root.find("emoji").get("cdnurl")
             log.info(f"尝试下载 {url}")
@@ -87,23 +88,25 @@ class MsgRecords:
             if not res:
                 log.error(f"chat_img failed:{errmsg}")
                 return
-            msg.img_info = f"发送了图片，图片描述:{res}"
+            msg.content = f"发送了图片，描述:{res}"
+        else:
+            msg.content = wxmsg.content
         self.msgs[room_id].append(msg)
-        log.info(f"add_msg:{msg.hash} {msg.img_info} {msg.wxmsg.content}")
+        log.info(f"add_msg:{msg.hash} {msg.content} {msg.wxmsg.content}")
     def get_recent_msg(self, room_id,wcf)->str:
         #整理为发言人:内容
         msgs = self.msgs[room_id]
+        max_msg = 20
+        if len(msgs) > max_msg:
+            msgs = msgs[-max_msg:]
         res = ""
         for item in msgs:
-            if not item.wxmsg.is_text() and not item.wxmsg.type == 3 and not item.wxmsg.type == 47:
+            if not item.content:
                 continue
             name = wcf.get_alias_in_chatroom(item.wxmsg.sender,room_id)
             # 格式化时间
             formatted_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item.time))
-            if item.wxmsg.type == 3 or item.wxmsg.type == 47:
-                res += f"{formatted_time} {name}:{item.img_info}\n"
-            else:
-                res += f"{formatted_time} {name}:{item.wxmsg.content}\n"
+            res += f"{formatted_time} {name}:{item.content}\n"
         return res
 
 

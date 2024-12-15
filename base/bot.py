@@ -23,7 +23,8 @@ class bot:
         self.wcf = Wcf(debug=True)
         self.wxid = self.wcf.get_self_wxid()
         self.log = log
-        self.MsgRecords = MsgRecords()
+        self.summary_time = 60*60*3
+        self.MsgRecords = MsgRecords(self.summary_time)
         self.randomMsg = randomMsg()
         self.oai = openaiApi()
         self.roomid = "44646802384@chatroom"#需要处理消息的roomid
@@ -103,8 +104,7 @@ class bot:
     #定时总结
     def summary_thread(self):
         while True:
-            #1个小时
-            time.sleep(60*60)
+            time.sleep(self.summary_time)
             ai_reply = self.summary()
             self.send_msg(ai_reply, self.roomid)
 
