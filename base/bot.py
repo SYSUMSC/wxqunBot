@@ -1,3 +1,4 @@
+from multiprocessing import Process
 import os
 from random import randint
 from queue import Empty
@@ -13,8 +14,12 @@ from utils.MsgRecords import MsgRecords
 from config import *
 from wcferry.client import Wcf
 from wcferry.wxmsg import WxMsg
+
+from utils.Process import clean_tmp
 class bot:
     def __init__(self, log: logging):
+        self.basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.tmppath = os.path.join(self.basepath, 'tmp')
         self.wcf = Wcf(debug=True)
         self.wxid = self.wcf.get_self_wxid()
         self.log = log
@@ -61,6 +66,8 @@ class bot:
                 return
         self.MsgRecords.add_msg(msg,self.wcf)
     def run(self):
+        clean_tmp_proc = Process(target=clean_tmp, args=(self.tmppath,))
+        clean_tmp_proc.start()
         summary_thread = Thread(target=self.summary_thread)
         summary_thread.start()
         while self.wcf.is_receiving_msg():
