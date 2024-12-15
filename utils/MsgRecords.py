@@ -42,8 +42,9 @@ class MsgRecords:
         # if not wxmsg.from_group():
         #     return
         #只接收text或者img
-        if not wxmsg.is_text() and not wxmsg.type == 3 and not wxmsg.type == 46 and not wxmsg.type == 47:
-            log.info(f"not text or img:{wxmsg.content}")
+        available_types = [1,3,46,47,49]
+        if wxmsg.type not in available_types:
+            # log.info(f"not text or img:{wxmsg.type}")
             return
 
         room_id = wxmsg.roomid
@@ -64,7 +65,7 @@ class MsgRecords:
                 return
             msg.content = f"发送了图片，描述:{res}"
         elif wxmsg.type == 46:
-            # 卡片
+            # APP的分享卡片
             root = parse_xml(wxmsg.content)
             appname = root.find("appinfo").find("appname").text
             title = root.find("appmsg").find("title").text
@@ -98,6 +99,16 @@ class MsgRecords:
                 log.error(f"chat_img failed:{errmsg}")
                 return
             msg.content = f"发送了图片，描述:{res}"
+        elif wxmsg.type == 49:
+            #引用
+            root = parse_xml(wxmsg.content)
+            refermsg = root.find("appmsg").find("refermsg")
+            chatusr = refermsg.find("chatusr").text
+            if not chatusr:
+                return
+            name = wcf.get_alias_in_chatroom(chatusr,room_id)
+            title = root.find("appmsg").find("title").text
+            msg.content = f"回复 {name} 的消息，说：{title}"
         else:
             msg.content = wxmsg.content
         self.msgs[room_id].append(msg)
