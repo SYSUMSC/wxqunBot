@@ -19,7 +19,7 @@ class openaiApi:
     def chat(self, user_prompt, system_prompt="") -> tuple:
         try:
             response = self.sf_client.chat.completions.create(
-                model="deepseek-ai/DeepSeek-V2.5",
+                model="deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
                 messages=[
                     {
                         "role": "system",
